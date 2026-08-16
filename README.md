@@ -223,7 +223,7 @@ graph TD
 | Token Reduction | 90%+ | ✅ Working |
 | Quality Preservation | 90%+ | ✅ Working |
 | Processing Speed | <2s per 1000 tokens | ✅ Cached: <1s |
-| Agent Compatibility | 50+ agents | ✅ 5 verified |
+| Agent Compatibility | 50+ agents | ✅ 25 verified |
 | Continuous Improvement | 0.1-0.5%/cycle | ✅ Framework enabled |
 | Auto-Update Cycles | Daily | ✅ Enabled |
 
