@@ -357,7 +357,7 @@ draco pre-deploy --check:
 7. Enterprise deployment issues not resolved by documentation
 
 **Contact Channels:**
-- GitHub Issues: `github.com/draco-token-optimizer/draco/issues`
+- GitHub Issues: `github.com/muhammad-khalid-bin-walid/DraCo-Token-Optimizer/issues`
 - Documentation: `docs.draco-token-optimizer.com`
 - Community Forum: `forum.draco-token-optimizer.com`
 - Email Support: `support@draco-token-optimizer.com`

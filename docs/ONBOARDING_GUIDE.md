@@ -13,7 +13,7 @@ Welcome to DraCo! This guide helps new developers and users get started with the
 
 ```bash
 # Clone the repository
-git clone https://github.com/your-org/draco-token-optimizer.git
+git clone https://github.com/muhammad-khalid-bin-walid/DraCo-Token-Optimizer.git
 cd draco-token-optimizer
 
 # Install the package

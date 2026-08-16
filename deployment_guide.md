@@ -179,7 +179,7 @@ restorecon -R /opt/draco
 ### Windows Deployment
 ```powershell
 # PowerShell installation
-iwr https://raw.githubusercontent.com/draco-token-optimizer/draco/main/install.ps1 | iex
+iwr https://raw.githubusercontent.com/muhammad-khalid-bin-walid/DraCo-Token-Optimizer/main/install.ps1 | iex
 
 # Or via pip
 pip install draco-token-optimizer
