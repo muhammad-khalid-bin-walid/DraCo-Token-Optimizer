@@ -1,6 +1,6 @@
 {
   "name": "draco-token-optimizer",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "description": "DraCo Token Optimizer - AI coding agent token reduction library",
   "main": "dist/draco.umd.js",
   "module": "dist/draco.esm.js",
@@ -34,7 +34,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/draco-token-optimizer/draco-js.git"
+    "url": "https://github.com/muhammad-khalid-bin-walid/DraCo-Token-Optimizer"
   },
   "keywords": [
     "token",

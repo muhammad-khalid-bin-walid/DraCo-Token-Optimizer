@@ -166,7 +166,6 @@ results = run_benchmarks()
 ### 📊 Agent YAGNI Ladder
 
 ```mermaid
-%%{init: {'theme': 'base', 'themeVariables': { 'primaryColor': '#1f77b4', 'primaryColorOpacity': 0.1, 'lineColor': '#ff7f0e', 'lineColorOpacity': 0.5, 'textColor': '#2c3e50', 'fontFamily': 'sans-serif' }}}%>
 graph TD
     subgraph L1_Minimal
         A[Generic Adapter]:::l1
@@ -230,7 +229,30 @@ graph TD
 
 ## 🔧 Version
 
-**draco-token-optimizer v2.0.0**
+**draco-token-optimizer v2.1.0**
+- Dual package distribution (pip + npm)
+- Production-ready with quality guarantees
+- 12-phase incremental pipeline
+- Docker/Kubernetes deployment support
+- Full benchmark suite
+- Status: **Ready for production use**
+- **Prometheus metrics endpoint** (`/metrics`)
+- **Flask dashboard** (`/`)
+- **Agent YAGNI ladder** (L1-L6 Mermaid visualization)
+- **Property-based testing** (Hypothesis, 27 tests)
+- **Docker health check** optimization
+- **Enhanced README** with release badges
+
+## 🆕 What's New in v2.1.0
+
+- Prometheus metrics endpoint (`/metrics`) for observability
+- Enhanced README with Prometheus and Flask dashboard badges
+- Agent YAGNI Ladder Mermaid visualization (L1-L6)
+- Property-based test suite using Hypothesis framework
+- Optimized Docker health check with Python fallback
+- Repository URL updated to `muhammad-khalid-bin-walid/DraCo-Token-Optimizer`
+
+draco-token-optimizer v2.0.0
 - Dual package distribution (pip + npm)
 - Production-ready with quality guarantees
 - 12-phase incremental pipeline

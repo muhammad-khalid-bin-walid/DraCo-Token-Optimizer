@@ -4,7 +4,7 @@ build-backend = "setuptools.backends._legacy:_Backend"
 
 [project]
 name = "draco-token-optimizer"
-version = "2.0.0"
+version = "2.1.0"
 description = "Comprehensive token optimization system for AI coding agents"
 requires-python = ">=3.9"
 license = {
@@ -39,10 +39,10 @@ extras = {
 
 # Project metadata
 urls = {
-    "Homepage": "https://github.com/draco-token-optimizer/draco",
+    "Homepage": "https://github.com/muhammad-khalid-bin-walid/DraCo-Token-Optimizer",
     "Documentation": "https://draco-token-optimizer.readthedocs.io/",
-    "Source": "https://github.com/draco-token-optimizer/draco",
-    "Tracker": "https://github.com/draco-token-optimizer/draco/issues",
+    "Source": "https://github.com/muhammad-khalid-bin-walid/DraCo-Token-Optimizer",
+    "Tracker": "https://github.com/muhammad-khalid-bin-walid/DraCo-Token-Optimizer/issues",
 }
 
 [project.scripts]
@@ -55,7 +55,7 @@ include = "docs/**"
 include = "CHANGELOG.md"
 
 [project.urls."CI"]
-github = "https://github.com/draco-token-optimizer/draco/actions"
+github = "https://github.com/muhammad-khalid-bin-walid/DraCo-Token-Optimizer/actions"
 
 [project.optional-dependencies]
 ml = ["transformers>=4.35.0", "sentence-transformers>=2.2.0"]
