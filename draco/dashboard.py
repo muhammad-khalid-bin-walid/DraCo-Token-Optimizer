@@ -2,6 +2,8 @@
 
 Provides real-time project metrics, quality gate tracking, and status overview
 for the DraCo token optimization system.
+
+Prometheus metrics endpoint available at /metrics for observability.
 """
 
 import json
@@ -14,6 +16,75 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from draco.config import get_reduction_target, get_quality_threshold
+
+
+# Prometheus metrics constants
+METRICS_VERSION = "2.0.0"
+METRICS_DESCRIPTION_PREFIX = "# HELP"
+METRICS_TYPE_PREFIX = "# TYPE"
+
+
+def prometheus_metrics():
+    """Generate Prometheus metrics text for scraping.
+    
+    Returns metrics in Prometheus text format that can be scraped by
+    Prometheus server. Exposes key DraCo optimization metrics.
+    
+    Example output:
+        # HELP draco_reduction_target_target Token reduction target percentage
+        # TYPE draco_reduction_target gauge
+        draco_reduction_target_target 90
+        # HELP draco_quality_threshold Quality preservation threshold percentage
+        # TYPE draco_quality_threshold gauge
+        draco_quality_threshold 90
+    """
+    metrics = quick_health_check()
+    
+    lines = []
+    
+    # Version info
+    lines.append(f"# HELP draco_version DraCo Token Optimizer version")
+    lines.append(f"# TYPE draco_version gauge")
+    lines.append(f"draco_version {METRICS_VERSION}")
+    lines.append("")
+    
+    # Reduction target
+    lines.append(f"# HELP draco_reduction_target_target Token reduction target percentage")
+    lines.append(f"# TYPE draco_reduction_target gauge")
+    lines.append(f"draco_reduction_target {metrics['reduction']}")
+    lines.append("")
+    
+    # Quality threshold
+    lines.append(f"# HELP draco_quality_threshold Quality preservation threshold percentage")
+    lines.append(f"# TYPE draco_quality_threshold gauge")
+    lines.append(f"draco_quality_threshold {metrics['quality']}")
+    lines.append("")
+    
+    # Mandates pass
+    lines.append(f"# HELP draco_mandates_pass Whether 90%+ quality and reduction mandates are passed")
+    lines.append(f"# TYPE draco_mandates_pass gauge")
+    lines.append(f"draco_mandates_pass {'1' if metrics['mandates_pass'] else '0'}")
+    lines.append("")
+    
+    # Phases completed
+    lines.append(f"# HELP draco_phases_completed Number of completed phases (out of 12)")
+    lines.append(f"# TYPE draco_phases_completed gauge")
+    lines.append(f"draco_phases_completed {metrics['phases_completed']}")
+    lines.append("")
+    
+    # Phases total
+    lines.append(f"# HELP draco_phases_total Total number of phases in the pipeline")
+    lines.append(f"# TYPE draco_phases_total gauge")
+    lines.append(f"draco_phases_total {metrics['phases_total']}")
+    lines.append("")
+    
+    # System healthy
+    lines.append(f"# HELP draco_system_healthy Whether the system is in healthy state")
+    lines.append(f"# TYPE draco_system_healthy gauge")
+    lines.append(f"draco_system_healthy {'1' if metrics['healthy'] else '0'}")
+    lines.append("")
+    
+    return "\n".join(lines)
 
 
 def quick_health_check():
