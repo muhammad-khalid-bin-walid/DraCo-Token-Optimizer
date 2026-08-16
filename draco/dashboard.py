@@ -4,6 +4,7 @@ Provides real-time project metrics, quality gate tracking, and status overview
 for the DraCo token optimization system.
 
 Prometheus metrics endpoint available at /metrics for observability.
+Flask app available at / for root endpoint.
 """
 
 import json
@@ -426,6 +427,32 @@ class AgentTracker:
         return best, compatibility.get(best) if best else None
 
 
+from flask import Flask, Response
+
+app = Flask(__name__)
+
+
+@app.route("/metrics")
+def metrics_endpoint():
+    """Prometheus metrics endpoint."""
+    return Response(prometheus_metrics(), mimetype="text/plain")
+
+
+@app.route("/")
+def root():
+    """Root endpoint with dashboard info."""
+    metrics = quick_health_check()
+    return {
+        "version": METRICS_VERSION,
+        "reduction_target": metrics["reduction"],
+        "quality_threshold": metrics["quality"],
+        "mandates_pass": metrics["mandates_pass"],
+        "phases_completed": metrics["phases_completed"],
+        "phases_total": metrics["phases_total"],
+        "healthy": metrics["healthy"],
+    }
+
+
 # Export main functions
 __all__ = [
     "quick_health_check",
@@ -435,4 +462,5 @@ __all__ = [
     "QualityTracker",
     "PhaseTracker",
     "AgentTracker",
+    "app",
 ]

@@ -9,6 +9,8 @@
 [![Quality Gates 90%+](https://img.shields.io/badge/quality-90%25%2B-brightgreen.svg)](https://github.com/draco-token-optimizer/draco)
 [![Token Reduction 90%+](https://img.shields.io/badge/reduction-90%25%2B-brightgreen.svg)](https://github.com/draco-token-optimizer/draco)
 [![codecov](https://img.shields.io/badge/coverage-90%25-brightgreen.svg)](https://codecov.io/gh/draco-token-optimizer/draco)
+[![Prometheus Metrics](https://img.shields.io/badge/metrics-prometheus-orange.svg)](http://localhost:5000/metrics)
+[![Flask Dashboard](https://img.shields.io/badge/dashboard-flask-blue.svg)](http://localhost:5000)
 
 ## 🚀 Token Optimization for AI Coding Agents
 
@@ -160,6 +162,50 @@ results = run_benchmarks()
 - **Docker/Kubernetes deployment** ready
 - **Benchmark suite** with standardized metrics
 - **Continuous learning** framework (CMA-ES, auto-update, A/B testing)
+
+### 📊 Agent YAGNI Ladder
+
+```mermaid
+%%{init: {'theme': 'base', 'themeVariables': { 'primaryColor': '#1f77b4', 'primaryColorOpacity': 0.1, 'lineColor': '#ff7f0e', 'lineColorOpacity': 0.5, 'textColor': '#2c3e50', 'fontFamily': 'sans-serif' }}}%>
+graph TD
+    subgraph L1_Minimal
+        A[Generic Adapter]:::l1
+    end
+    subgraph L2_Light
+        B[Codex]:::l2
+        C[Cursor]:::l2
+    end
+    subgraph L3_Standard
+        D[Claude Code]:::l3
+        E[Copilot]:::l3
+    end
+    subgraph L4_Enhanced
+        F[Code Llama]:::l4
+    end
+    subgraph L5_Aggressive
+        G[DeepSeek]:::l5
+    end
+    subgraph L6_Maximal
+        H[Custom/Research]:::l6
+    end
+
+    A -->|Reduction Cap: 95%| B
+    B -->|Reduction Cap: 92%| C
+    C -->|Reduction Cap: 88%| D
+    D -->|Reduction Cap: 85%| E
+    E -->|Reduction Cap: 91%| F
+    F -->|Reduction Cap: 89%| G
+    G -->|Reduction Cap: 87%| H
+
+    classDef l1 fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px;
+    classDef l2 fill:#e3f2fd,stroke:#1565c0,stroke-width:2px;
+    classDef l3 fill:#fff3e0,stroke:#fb8c00,stroke-width:2px;
+    classDef l4 fill:#f1f8e9,stroke:#689f38,stroke-width:2px;
+    classDef l5 fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px;
+    classDef l6 fill:#fffde7,stroke:#f57f17,stroke-width:2px;
+```
+
+*L1-L6: YAGNI (You Ain't Gonna Need It) levels with increasing reduction caps but decreasing quality minima*
 
 ## 📚 Documentation
 
