@@ -6,9 +6,9 @@
 [![Python 3.9+](https://img.shields.io/badge/python-3.9+-blue.svg)](https://www.python.org/downloads/release/python-390/)
 [![TypeScript](https://img.shields.io/badge/typescript-%20%7C%20ESM%20%7C%20UMD-blue.svg)](https://www.typescriptlang.org/)
 [![Docker](https://img.shields.io/badge/docker-ready-46a2f8.svg)](https://hub.docker.com/r/draco-token-optimizer)
-[![Quality Gates 90%+](https://img.shields.io/badge/quality-90%25%2B-brightgreen.svg)](https://github.com/draco-token-optimizer/draco)
-[![Token Reduction 90%+](https://img.shields.io/badge/reduction-90%25%2B-brightgreen.svg)](https://github.com/draco-token-optimizer/draco)
-[![codecov](https://img.shields.io/badge/coverage-90%25-brightgreen.svg)](https://codecov.io/gh/draco-token-optimizer/draco)
+[![Quality Gates 90%+](https://img.shields.io/badge/quality-90%25%2B-brightgreen.svg)](https://github.com/muhammad-khalid-bin-walid/DraCo-Token-Optimizer)
+[![Token Reduction 90%+](https://img.shields.io/badge/reduction-90%25%2B-brightgreen.svg)](https://github.com/muhammad-khalid-bin-walid/DraCo-Token-Optimizer)
+[![codecov](https://img.shields.io/badge/coverage-90%25-brightgreen.svg)](https://codecov.io/gh/muhammad-khalid-bin-walid/DraCo-Token-Optimizer)
 [![Prometheus Metrics](https://img.shields.io/badge/metrics-prometheus-orange.svg)](http://localhost:5000/metrics)
 [![Flask Dashboard](https://img.shields.io/badge/dashboard-flask-blue.svg)](http://localhost:5000)
 
@@ -260,6 +260,6 @@ MIT License - Copyright (c) 2026 DraCo Token Optimizer Team
 
 **⭐ Star the repo to support ongoing development!**
 
-[![GitHub stars](https://img.shields.io/github/stars/draco-token-optimizer/draco.svg?style=social&label=Star)](https://github.com/draco-token-optimizer/draco)
-[![GitHub forks](https://img.shields.io/github/forks/draco-token-optimizer/draco.svg?style=social&label=Fork)](https://github.com/draco-token-optimizer/draco/fork)
-[![GitHub watchers](https://img.shields.io/github/watchers/draco-token-optimizer/draco.svg?style=social&label=Watch)](https://github.com/draco-token-optimizer/draco/watch)
+[![GitHub stars](https://img.shields.io/github/stars/muhammad-khalid-bin-walid/DraCo-Token-Optimizer.svg?style=social&label=Star)](https://github.com/muhammad-khalid-bin-walid/DraCo-Token-Optimizer)
+[![GitHub forks](https://img.shields.io/github/forks/muhammad-khalid-bin-walid/DraCo-Token-Optimizer.svg?style=social&label=Fork)](https://github.com/muhammad-khalid-bin-walid/DraCo-Token-Optimizer/fork)
+[![GitHub watchers](https://img.shields.io/github/watchers/muhammad-khalid-bin-walid/DraCo-Token-Optimizer.svg?style=social&label=Watch)](https://github.com/muhammad-khalid-bin-walid/DraCo-Token-Optimizer/watch)
