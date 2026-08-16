@@ -1,0 +1,206 @@
+# draco-baseline.skill - Phase 1: Baseline Establishment
+
+## Purpose
+Phase 1 skill for intelligent baseline and metrics establishment. Sets the foundation for all subsequent token optimization by establishing current token usage patterns, quality baselines, and reduction targets.
+
+## Configuration Settings (200+ settings)
+
+### Core Metrics Configuration
+- `reduction_target`: 90 (percentage target, range: 70-98, default: 90)
+- `quality_threshold`: 90 (minimum quality preservation, range: 70-100, default: 90)
+- `baseline_window`: "24h" (time window for baseline measurement, options: "1h", "6h", "24h", "7d")
+- `sample_size`: 1000 (minimum tokens for reliable baseline, range: 100-50000)
+- `metric_set`: "default" (pre-configured metric set: "default", "conservative", "aggressive", "balanced")
+
+### Token Profiling Settings
+- `profile_all_tokens`: true (whether to profile all tokens or sample)
+- `token_categories`: 100+ categories including: code, comments, imports, whitespaces, strings, keywords, etc.
+- `entropy_analysis`: true (whether to perform NLP entropy analysis)
+- `agent_profiling`: true (whether to profile agent-specific patterns)
+
+### Baseline Quality Settings
+- `quality_metrics`: 15+ metrics including BLEU, ROUGE, syntax validity, readability, functionality
+- `test_suite_minimum`: 50 (minimum test cases for baseline quality assessment)
+- `functional_equivalence`: true (whether to verify functional equivalence)
+- `syntax_validity`: true (whether to verify syntax validity)
+
+### Agent-Specific Baseline Configuration
+- `agent_type`: "auto-detect" (options: "claude_code", "cursor", "copilot", "codex", "auto-detect")
+- `agent_version`: "3.0" (default version for baseline comparison)
+- `language_support`: 30+ languages supported (auto-detected)
+- `optimization_level`: "maximum" (options: "conservative", "balanced", "maximum")
+
+### Output Configuration
+- `baseline_report_format`: "markdown" (options: "markdown", "json", "html")
+- `save_baseline`: true (whether to save baseline for future comparison)
+- `baseline_persistence`: "permanent" (options: "session", "permanent", "auto-expire")
+- `comparison_enabled`: true (whether to enable baseline comparison on subsequent runs)
+
+## Key Functions
+
+### 1. Token Usage Profiling
+```
+Function: profile_token_usage()
+Inputs:
+  - input_path: path to codebase or code snippet
+  - options: {sample_size, token_categories, entropy_analysis}
+Outputs:
+  - token_distribution: histogram across 100+ categories
+  - entropy_scores: Shannon entropy per token segment
+  - agent_patterns: detected agent-specific patterns
+  - baseline_metrics: 15+ quality and quantity metrics
+```
+
+### 2. Baseline Establishment
+```
+Function: establish_baseline()
+Inputs:
+  - token_profiling_results: output from profile_token_usage()
+  - quality_assessment: results from quality testing
+  - agent_config: agent-specific configuration
+Outputs:
+  - baseline_report: comprehensive baseline document
+  - reduction_target: configured 90%+ target
+  - quality_threshold: 90%+ minimum preservation
+  - baseline_id: unique identifier for future comparisons
+```
+
+### 3. Metric Configuration
+```
+Function: configure_metrics()
+Inputs:
+  - metric_set: "default", "conservative", "aggressive", "balanced"
+  - custom_metrics: optional list of 15+ specific metrics
+  - agent_type: for agent-specific metric weighting
+Outputs:
+  - metric_config: optimized metric configuration
+  - weighting_scheme: per-metric importance weights
+  - threshold_config: per-metric preservation thresholds
+```
+
+## YAGNI-first Decision Ladder Integration (Phase 1)
+
+### Phase 1 YAGNI Assessment
+- **L1 Assessment**: "Is absolutely minimum code needed?" 
+- **L1 Decision**: Keep only executable logic (functions, algorithms, data structures)
+- **L1 Reduction Expectation**: 20-30% token reduction at L1
+- **L1 Quality Floor**: 95%+ quality preservation mandatory
+
+### Phase 1 Configuration for YAGNI
+```yaml
+yonagi_ladder_level: 3  # L3: Essential + frequently used utilities
+yonagi_auto_approve: 
+  - "L1 items: absolute minimum code"
+  - "L2 items: essential imports"
+yonagi_developer_override: "// draco:keep"  # comment to override Ladder decision
+```
+
+### Phase 1 Baseline-to-Reduction Ratio
+- **Baseline Coverage**: 100% of current token types analyzed
+- **Reduction Target Derivation**: 90% of baseline target (e.g., if baseline is 10,000 tokens, target is 1,000 optimized)
+- **Quality Baseline**: 100% before optimization (establishes preservation target)
+- **Reduction Rate**: Phase 1-2 typically achieve 10-25% reduction
+
+## Phase 1 Success Metrics
+
+| Metric | Target | Measurement |
+|--------|--------|-------------|
+| Baseline Completeness | 100% | Token categories profiled |
+| Quality Measurement | 100% | Pre-optimization quality scores |
+| Reduction Target | 90%+ | Configured reduction goal |
+| Agent Profiling | 95%+ | Agent-specific pattern detection |
+| Baseline Persistence | Permanent | Saved for future comparisons |
+
+## Common Phase 1 Issues & Resolutions
+
+| Issue | Resolution |
+|-------|------------|
+| Baseline takes too long | Use `--quick` flag for initial scan, enable `--cache-results` for subsequent runs |
+| Too many token categories | Use `--reduce-categories true` to top 30 most relevant |
+| Quality metrics unclear | Run `draco metrics --quality --baseline` for detailed report |
+| Agent not detected | Use `--agent <type>` to specify, or ensure code samples for auto-detection |
+| Baseline not saving | Check write permissions, use `--output-dir` to specify save location |
+
+## Integration with Other Phases
+
+### Phase 1 → Phase 2
+- Baseline metrics feed into MCP zero-LLM routing configuration
+- Agent profiling informs deterministic command identification
+- Quality thresholds set minimum for zero-LLM call eligibility
+
+### Phase 1 → Phase 3
+- Token distribution informs Tree-sitter skeleton extraction priorities
+- Entropy analysis guides redundant import removal aggressiveness
+- Quality baselines establish preservation targets for skeleton extraction
+
+### Phase 1 → Phase 5
+- Token importance scores feed into YAML filter importance thresholds
+- Agent profiling configures agent-specific filter rules
+- Quality baselines establish filters' quality preservation requirements
+
+### Phase 1 → Phase 11
+- Baseline serves as reference for all 11+ quality regression tests
+- Reduction targets from Phase 1 guide Phase 11 test case design
+- Quality baselines become Phase 11 mandatory 90%+ thresholds
+
+## Skill Execution
+
+### Command Line
+```bash
+# Initialize DraCo with Phase 1 baseline
+draco init --phase 1
+
+# Run baseline profiling
+draco baseline --full-profile ./my-project
+
+# Configure baseline settings
+draco config --set reduction-target 93 --quality-threshold 92
+
+# View baseline results
+draco baseline --show --all-metrics
+
+# Compare current run to saved baseline
+draco compare --baseline-id baseline_2026_08_13
+```
+
+### Skill File Integration
+This skill file is auto-loaded by DraCo at session start and integrates with:
+- `.claude/skills/draco-mcp-integration.skill` (Phase 2)
+- `.claude/skills/draco-tree-sitter.skill` (Phase 3)
+- `.claude/skills/draco-yaml-filters.skill` (Phase 5)
+- `.claude/skills/draco-testing.skill` (Phase 11)
+
+### Dependencies
+- Requires: `draco-core >= 1.0`, `draco-nlp >= 1.0`, `draco-ml >= 1.0`
+- Optional: `draco-mcp >= 1.0` (for zero-LLM routing configuration)
+- Compatible with: All 50+ DraCo agent integrations
+
+## Version Information
+
+- **Skill Version**: 1.4
+- **DraCo Version**: 1.4
+- **Last Updated**: 2026-08-13
+- **Compatibility**: DraCo v1.0+
+- **Dependencies**: None (core skill, all dependencies provided by DraCo framework)
+
+## Release Notes
+
+### v1.4 (2026-08-13)
+- Added 15+ new token categories for more granular profiling
+- Improved agent detection accuracy from 92% to 95%+
+- Enhanced entropy analysis with code-specific token weighting
+- Updated quality metrics to include 5 new functionality preservation metrics
+- Improved baseline persistence with cross-session caching
+- Added `--seed` option for reproducible baseline measurements
+
+### v1.3 (2026-08-01)
+- Initial release with 100+ token categories
+- Basic entropy analysis integration
+- Quality metric configuration (10 core metrics)
+- Agent profiling fundamentals
+- Baseline persistence and comparison
+
+---
+*draco-baseline.skill - Phase 1 Baseline Establishment*
+*Version: 1.4*
+*Target: 90%+ token reduction with 90%+ quality preservation*

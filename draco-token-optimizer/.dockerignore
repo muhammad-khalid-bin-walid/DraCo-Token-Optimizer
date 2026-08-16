@@ -1,0 +1,28 @@
+# DraCo Docker Ignore File
+# Exclude unnecessary files from Docker build context
+
+# Python cache
+__pycache__
+*.pyc
+*.pyo
+*~
+
+# Distribution
+dist/
+build/
+*.egg-info/
+
+# Git
+.git/
+.gitignore
+
+# Logs
+logs/
+*.log
+
+# Temporary
+tmp/
+test_*/
+
+# Docker specific
+.dockerignore

@@ -1,0 +1,86 @@
+# DraCo Token Optimizer v2.0.0 - Docker Compose
+# Multi-service deployment for token optimization
+
+version: '3.8'
+
+services:
+  draco-api:
+    build: .
+    image: draco-token-optimizer:2.0.0
+    container_name: draco-optimizer
+    restart: unless-stopped
+    environment:
+      - REDUCTION_TARGET=90
+      - QUALITY_THRESHOLD=90
+      - DRACO_ENVIRONMENT=production
+      - MCP_TRANSPORT=stdio
+      - MCP_PORT=5000
+    ports:
+      - "5000:5000"  # MCP stdio port
+    volumes:
+      - ./data:/app/data  # Persistent data volume
+      - ./config:/app/config  # Config volume
+    healthcheck:
+      test: ["CMD", "draco", "health"]
+      interval: 60s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+  draco-worker:
+    build: .
+    image: draco-token-optimizer:2.0.0
+    container_name: draco-worker
+    restart: unless-stopped
+    environment:
+      - DRACO_ENVIRONMENT=production
+      - REDUCTION_TARGET=90
+      - QUALITY_THRESHOLD=90
+      - OPTIMIZE_CPU=true
+      - OPTIMIZE_MEMORY=true
+    command: ["draco", "optimize", "--batch", "--input", "/data/input", "--output", "/data/output"]
+    volumes:
+      - ./data:/data:ro  # Read-only data volume
+    depends_on:
+      draco-api:
+        condition: service_healthy
+
+  prometheus:
+    image: prom/prometheus
+    container_name: draco-prometheus
+    restart: unless-stopped
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    ports:
+      - "9090:9090"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9090/-/healthy"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+  grafana:
+    image: grafana/grafana
+    container_name: draco-grafana
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    depends_on:
+      prometheus:
+        condition: service_healthy
+    environment:
+      - AUTH_ENABLED=false
+    volumes:
+      - ./monitoring/grafana:/etc/grafana:ro
+
+  # Optional: Dashboard service
+  dashboard:
+    build: .
+    image: draco-token-optimizer:2.0.0
+    container_name: draco-dashboard
+    restart: unless-stopped
+    environment:
+      - DRACO_ENVIRONMENT=production
+    command: ["draco", "dashboard"]
+    volumes:
+      - ./data:/data

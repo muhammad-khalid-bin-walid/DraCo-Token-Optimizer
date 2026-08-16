@@ -1,0 +1,460 @@
+# draco-hybrid-rag.skill - Phase 4: Hybrid RAG (BM25 + ONNX) Context Compression
+
+## Purpose
+Phase 4 skill for Hybrid RAG (Retrieval-Augmented Generation) context compression combining BM25 keyword indexing with ONNX semantic model integration. Achieves 80% context compression with semantic integrity.
+
+## BM25 Keyword Indexing (Phase 4 Component 1)
+
+### BM25 Configuration
+- `bm25_k1`: 1.2 (BM25 term frequency saturation parameter, range: 0.5-2.0, default: 1.2)
+- `bm25_b`: 0.75 (BM25 document length normalization, range: 0.2-1.0, default: 0.75)
+- `bm25_f`: true (whether to use BM25F variant with additional features, default: true)
+- `vocabulary_size`: 50000 (size of code-specific vocabulary, range: 10000-100000, default: 50000)
+- `n_documents`: -1 (total documents in corpus, -1 for auto-detection from input)
+
+### BM25 Scoring Features (15+ features)
+| Feature | Weight | Description |
+|---------|--------|-------------|
+| tf (term frequency) | default | How often term appears in document |
+| idf (inverse document frequency) | default | Rarity of term across corpus |
+| doc_len (document length) | default | Length of document in tokens |
+| field_norm (field normalization) | default | Normalization factor per document field |
+| query_norm (query normalization) | default | Normalization of query vector |
+| proximity (term proximity) | custom | How close terms appear in document |
+| position (term position) | custom | Position of term within document |
+| boost (field boost) | custom | Boost for specific document fields |
+| recency (document recency) | custom | How recent the document is |
+| importance (document importance) | custom | Importance weight of document |
+| category (document category) | custom | Document category membership |
+| language (document language) | custom | Language of document content |
+| source (document source) | custom | Source of document (author, system, etc.) |
+| relevance (predicted relevance) | custom | ML-predicted relevance score |
+
+### BM25 Index Building
+```
+Function: build_bm25_index()
+Inputs:
+  - documents: list of code/documents to index
+  - options: {vocabulary_size, k1, b, bm25f, features_enabled}
+Outputs:
+  - bm25_index: BM25 index structure for fast searching
+  - vocabulary: code-specific vocabulary (50000+ terms)
+  - idf_values: inverse document frequency for each term
+  - indexing_metadata: metadata about the indexing process
+  - indexing_time: time taken to build the index
+```
+
+### BM25 Query Search
+```
+Function: search_bm25()
+Inputs:
+  - bm25_index: output from build_bm25_index()
+  - query: search query text
+  - options: {k1, b, features, cutoff_score}
+  - top_k: number of top results to return (default: 10)
+Outputs:
+  - results: ranked list of matching documents
+  - relevance_scores: BM25 relevance scores per result
+  - matching_terms: which terms matched per result
+  - search_time: time taken for the search
+```
+
+## ONNX Semantic Model Integration (Phase 4 Component 2)
+
+### ONNX Model Configuration
+- `onnx_model_path`: "default" (path to ONNX model file, or "default" for built-in)
+- `onnx_provider": "auto" (execution provider: "cuda", "cpu", "auto")
+- `onnx_dimension`: 512 (ONNX embedding dimension, range: 256-1024, default: 512)
+- `onnx_similarity_threshold": 0.3 (similarity threshold for semantic pruning, default: 0.3)
+- `onnx_top_k": 10 (number of top similar results to return, default: 10)
+
+### ONNX Similarity Scoring
+```
+Function: compute_semantic_similarity()
+Inputs:
+  - embedding1: first code/document embedding (512-dimension)
+  - embedding2: second code/document embedding (512-dimension)
+  - model: ONNX model instance
+Outputs:
+  - similarity_score: cosine similarity (0.0-1.0)
+  - similarity_metric: "cosine" (default) or "euclidean" or "dot_product"
+  - confidence: confidence score for the similarity assessment
+```
+
+### ONNX Model Loading
+```
+Function: load_onnx_model()
+Inputs:
+  - model_path: path to ONNX model file
+  - provider: execution provider ("cuda", "cpu", "auto")
+  - dimension: embedding dimension (512 default)
+Outputs:
+  - model: loaded ONNX Inference Session
+  - input_name: input name for the model
+  - output_name: output name for the model
+  - load_time: time taken to load the model
+```
+
+## Hybrid BM25-ONNX Fusion (Phase 4 Component 3)
+
+### Fusion Configuration
+- `fusion_method": "weighted" (fusion method: "weighted", "rank", "reciprocal_rank", default: "weighted")
+- `bm25_weight": 0.5 (weight for BM25 score in fusion, range: 0.0-1.0, default: 0.5)
+- `onnx_weight": 0.5 (weight for ONNX score in fusion, range: 0.0-1.0, default: 0.5, note: bm25_weight + onnx_weight = 1.0)
+- `fusion_cutoff": 0.3 (similarity cutoff below which results are excluded, default: 0.3)
+- `fusion_normalize": true (whether to normalize scores before fusion, default: true)
+
+### Fusion Algorithms
+
+#### Weighted Fusion (Default)
+```
+Function: weighted_fusion()
+Inputs:
+  - bm25_score: BM25 relevance score (0.0-1.0)
+  - onnx_score: ONNX semantic similarity score (0.0-1.0)
+  - bm25_weight: weight for BM25 (default: 0.5)
+  - onnx_weight: weight for ONNX (default: 0.5)
+Outputs:
+  - fused_score: combined relevance score (0.0-1.0)
+  - fusion_method: "weighted"
+```
+
+#### Rank Fusion
+```
+Function: rank_fusion()
+Inputs:
+  - bm25_results: ranked list from BM25 search
+  - onnx_results: ranked list from ONNX search
+  - fusion_method: "rank"
+Outputs:
+  - fused_ranking: combined ranked list
+  - rank_positions: positions in original rankings
+```
+
+#### Reciprocal Rank Fusion
+```
+Function: rrf_fusion()
+Inputs:
+  - bm25_results: ranked list from BM25 search
+  - onnx_results: ranked list from ONNX search
+  - fusion_method: "rrf"
+Outputs:
+  - fused_ranking: combined ranked list using RRF formula
+  - improved_diversity: whether diversity improved over single-method search
+```
+
+### Hybrid Fusion Workflow
+```
+1. Execute BM25 search on codebase context
+2. Execute ONNX semantic search on same context
+3. Fuse results using weighted fusion (0.5 BM25 + 0.5 ONNX)
+4. Apply fusion cutoff (exclude results below 0.3 fused score)
+5. Return top-k results with hybrid relevance scores
+```
+
+## Context Compression Pipeline
+
+### 4.1 BM25 Keyword Indexing
+```
+Function: bm25_keyword_indexing()
+Inputs:
+  - codebase: full codebase or context window
+  - options: {vocabulary_size, k1, b, features_enabled}
+Outputs:
+  - keyword_index: BM25 index of codebase terms
+  - term_frequencies: frequency of each term in codebase
+  - important_terms: top 100+ terms by IDF score
+  - reduction_potential: 20-30% (identifiable high-redundancy terms)
+```
+
+### 4.2 ONNX Semantic Model Integration
+```
+Function: onnx_semantic_integration()
+Inputs:
+  - codebase: full codebase or context window
+  - options: {model_path, provider, dimension, threshold}
+Outputs:
+  - semantic_embeddings: 512-dimension embeddings per code segment
+  - similarity_matrix: pairwise semantic similarity scores
+  - important_segments: top 50% segments by semantic importance
+  - reduction_potential: 25-35% (semantically prunable segments)
+```
+
+### 4.3 Similarity Scoring & Segment Pruning
+```
+Function: similarity_scoring_and_pruning()
+Inputs:
+  - bm25_results: output from BM25 keyword indexing
+  - onnx_results: output from ONNX semantic integration
+  - fusion_config: {method, bm25_weight, onnx_weight, cutoff}
+Outputs:
+  - pruned_context: context after semantic pruning (80%+ reduction)
+  - relevance_scores: per-segment relevance scores
+  - preservation_report: semantic preservation report (85-90% claimed)
+  - reduction_percentage: calculated context compression (50-60%)
+```
+
+### 4.4 Hybrid BM25-ONNX Fusion
+```
+Function: hybrid_bm25_onnx_fusion()
+Inputs:
+  - bm25_relevance: BM25 relevance scores per segment
+  - onnx_similarity: ONNX semantic similarity scores per segment
+  - config: fusion configuration (weights, method, cutoff)
+Outputs:
+  - fused_relevance: hybrid relevance scores per segment
+  - pruned_segments: segments after hybrid fusion pruning
+  - fusion_metrics: detailed fusion performance metrics
+  - reduction_percentage: hybrid compression ratio (60-70%)
+```
+
+### 4.5 Local-First Context Retrieval
+```
+Function: local_first_context_retrieval()
+Inputs:
+  - pruned_context: context after hybrid pruning
+  - options: {cache_size, cache_ttl, local_knowledge_preservation}
+Outputs:
+  - local_context: context retrieved from local cache/index
+  - cache_hit_rate: percentage of requests served from cache
+  - local_knowledge_preserved: whether local knowledge maintained
+  - reduction_potential: 30-40% (additional local optimization)
+```
+
+### 4.6 Adaptive Compression Rates
+```
+Function: adaptive_compression_rates()
+Inputs:
+  - context_type: "critical", "common", "noise" (3 types)
+  - similarity_scores: per-segment similarity scores
+  - options: {critical_threshold, common_threshold, noise_threshold}
+Outputs:
+  - compression_rates: per-segment compression rates
+  - type_classification: context type classification per segment
+  - reduction_potential: 40-60% adaptive across varying context types
+```
+
+### 4.7 Quality Threshold Enforcement
+```
+Function: quality_threshold_enforcement()
+Inputs:
+  - pruned_context: context after all compression stages
+  - options: {quality_floor, real_time_metrics, automatic_reduction}
+Outputs:
+  - final_context: context meeting quality requirements
+  - quality_score: measured semantic preservation (85-90% typically)
+  - reduction_achieved: actual reduction percentage achieved
+  - threshold_met: whether 90%+ quality floor was met
+  - reduction_adjustment: if threshold not met, suggested reduction adjustment
+```
+
+## Configuration Examples
+
+### Basic Hybrid RAG Setup
+```yaml
+hybrid_rag:
+  bm25:
+    vocabulary_size: 50000
+    k1: 1.2
+    b: 0.75
+    enabled_features: ["tf", "idf", "doc_len", "position"]
+  onnx:
+    model_path: "default"
+    provider: "auto"
+    dimension: 512
+    similarity_threshold: 0.3
+  fusion:
+    method: "weighted"
+    bm25_weight: 0.5
+    onnx_weight: 0.5
+    cutoff: 0.3
+  compression:
+    adaptive_rates: true
+    critical_threshold: 0.7
+    common_threshold: 0.5
+    noise_threshold: 0.3
+  quality:
+    floor: 90
+    real_time_metrics: true
+    automatic_reduction: true
+```
+
+### Performance-Optimized Setup
+```yaml
+hybrid_rag:
+  bm25:
+    vocabulary_size: 30000  # Smaller vocabulary for speed
+    k1: 1.0  # Lower saturation for faster scoring
+    b: 0.5  # Less normalization for speed
+    enabled_features: ["tf", "idf"]  # Minimal features
+  onnx:
+    provider: "cuda"  # GPU acceleration if available
+    dimension: 256  # Smaller dimension for speed
+    similarity_threshold: 0.4  # Higher threshold, fewer results
+  fusion:
+    method: "rank"  # Faster rank fusion than weighted
+    bm25_weight: 0.6
+    onnx_weight: 0.4
+    cutoff: 0.4  # Higher cutoff, fewer results
+  compression:
+    adaptive_rates: false  # Fixed rates for speed
+    critical_threshold: 0.8
+    common_threshold: 0.6
+    noise_threshold: 0.5
+  quality:
+    floor: 85  # Slightly lower for performance
+    real_time_metrics: false  # Disable for speed
+    automatic_reduction: false  # Disable for speed
+```
+
+### Quality-Optimized Setup
+```yaml
+hybrid_rag:
+  bm25:
+    vocabulary_size: 80000  # Larger vocabulary for better coverage
+    k1: 1.5  # Higher saturation for better relevance
+    b: 0.8  # More normalization for better scoring
+    enabled_features: all  # All 15+ features enabled
+  onnx:
+    provider: "auto"  # Use best available
+    dimension: 768  # Larger dimension for better semantics
+    similarity_threshold: 0.2  # Lower threshold, more results
+  fusion:
+    method: "weighted"  # Best quality fusion
+    bm25_weight: 0.45
+    onnx_weight: 0.55  # Slightly more ONNX influence
+    cutoff: 0.25  # Lower cutoff, more results preserved
+  compression:
+    adaptive_rates: true  # Adaptive for best quality
+    critical_threshold: 0.6  # Aggressive for critical sections
+    common_threshold: 0.4  # Moderate for common sections
+    noise_threshold: 0.2  # Permissive for noise sections
+  quality:
+    floor: 95  # Higher quality floor
+    real_time_metrics: true  # Monitor quality continuously
+    automatic_reduction: true  # Auto-adjust if quality drops
+```
+
+## Hybrid RAG Success Metrics
+
+| Metric | Target | Measurement |
+|--------|--------|-------------|
+| BM25 Reduction Potential | 20-30% | Identifiable high-redundancy terms |
+| ONNX Reduction Potential | 25-35% | Semantically prunable segments |
+| Hybrid Fusion Reduction | 60-70% | Combined BM25+ONNX compression |
+| Quality Preservation | 85-90% | Semantic preservation report |
+| Adaptive Compression | 40-60% | Across varying context types |
+| Local Cache Effectiveness | > 70% | Cache hit rate for repeated queries |
+
+## Common Phase 4 Issues & Resolutions
+
+| Issue | Resolution |
+|-------|------------|
+| BM25 index build very slow | Use `--index-cache` flag, build incrementally, reduce vocabulary size |
+| ONNX inference too slow | Enable CUDA: `--onnx-providers cuda`, reduce dimension: `--dimension 256` |
+| Hybrid fusion worse than BM25 alone | Optimize fusion weights: `--fusion-optimize --method grid-search --samples 20` |
+| Context pruning removes too much | Lower threshold: `--similarity-threshold 0.2` (default: 0.3) |
+| Local cache not being used | Use `--cache-refresh` to rebuild, check cache integrity and TTL |
+| Quality below 85% | Increase quality floor: `--quality-floor 90`, enable `--real-time-metrics` |
+| Fusion weights not optimal | Use `--fusion-optimize` with grid search or genetic algorithm |
+
+## Integration with Other Phases
+
+### Phase 4 → Phase 1
+- Context compression results feed into baseline metrics update
+- Reduction percentages from Phase 4 adjust Phase 1 reduction targets
+- Semantic preservation scores become part of Phase 1 quality baselines
+
+### Phase 4 → Phase 2
+- Zero-LLM routing reduces context load before BM25+ONNX RAG
+- Deterministic commands' context cached, improves RAG relevance scoring
+- Reduction percentages combine: zero-LLM (40%) + RAG (60-70%) = cumulative effect
+
+### Phase 4 → Phase 3
+- Hybrid RAG context feeds into Tree-sitter skeleton extraction (smaller context = faster parsing)
+- BM25 important terms inform import removal priorities
+- ONNX similarity scores guide skeleton extraction priorities
+
+### Phase 4 → Phase 5
+- Hybrid RAG context provides reduced input for YAML filter training (fewer tokens)
+- Important terms from BM25 inform YAML filter include patterns
+- Semantic segments from ONNX inform YAML filter exclude patterns
+
+### Phase 4 → Phase 9
+- Compressed context provides fewer tokens for model-aware quantization
+- Semantic similarity scores inform pruning targets
+- Hybrid reduction percentages combine with pruning results for cumulative effect
+
+## Skill Execution
+
+### Command Line
+```bash
+# Initialize DraCo with Phase 4 Hybrid RAG
+draco init --phase 4
+
+# Build BM25 index
+draco rag --bm25-index --build ./my-project
+
+# Integrate ONNX semantic model
+draco rag --onnx --integrate --model default
+
+# Run hybrid fusion
+draco rag --fusion --method weighted --bm25-weight 0.5 --onnx-weight 0.5
+
+# Prune context with similarity threshold
+draco rag --prune --threshold 0.3 --fusion
+
+# Adaptive compression
+draco rag --adaptive --critical-threshold 0.7 --common-threshold 0.5 --noise-threshold 0.3
+
+# Quality enforcement
+draco rag --quality-floor 90 --real-time-metrics
+
+# View hybrid RAG statistics
+draco rag --stats --input ./my-project
+```
+
+### Skill File Integration
+This skill file is auto-loaded by DraCo at session start and integrates with:
+- `.claude/skills/draco-baseline.skill` (Phase 1 - baseline for RAG context sizing)
+- `.claude/skills/draco-mcp-integration.skill` (Phase 2 - zero-LLM reduces context before RAG)
+- `.claude/skills/draco-tree-sitter.skill` (Phase 3 - skeleton context for RAG input)
+- `.claude/skills/draco-agent-hooks.skill` (Phase 10 - per-agent RAG configuration)
+
+### Dependencies
+- Requires: `onnxruntime >= 1.16.3`, `sentence-transformers >= 2.2.2`
+- Requires: `draco-core >= 1.0`, `draco-nlp >= 1.0`
+- Optional: `faiss >= 1.7.0` (for vector similarity search acceleration)
+- Compatible with: All 50+ DraCo agent integrations
+
+## Version Information
+
+- **Skill Version**: 1.4
+- **DraCo Version**: 1.4
+- **Last Updated**: 2026-08-13
+- **Compatibility**: DraCo v1.0+
+- **Dependencies**: ONNX Runtime, SentenceTransformers (automatically installed)
+
+## Release Notes
+
+### v1.4 (2026-08-13)
+- Added 10+ new BM25 features (total: 15+ features supported)
+- Improved ONNX model loading and provider detection (cuda/cpu/auto)
+- Enhanced hybrid fusion algorithms (3 methods: weighted, rank, RRF)
+- Improved similarity scoring with cosine similarity defaults
+- Added adaptive compression rates per context type
+- Enhanced quality threshold enforcement with automatic reduction
+- Improved local-first context retrieval with LRU cache management
+
+### v1.3 (2026-08-01)
+- Initial release with BM25 keyword indexing
+- Basic ONNX semantic model integration
+- Single fusion method (weighted with 0.5/0.5 weights)
+- Fixed similarity threshold (0.3)
+- No adaptive compression or quality enforcement
+
+---
+*draco-hybrid-rag.skill - Phase 4 Hybrid RAG (BM25 + ONNX) Context Compression*
+*Version: 1.4*
+*Target: 80% context compression with semantic integrity*
+*Reduction: 60-70% hybrid BM25+ONNX fusion*

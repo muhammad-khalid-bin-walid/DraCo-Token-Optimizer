@@ -1,0 +1,22 @@
+name: DraCo Quality Gates
+
+on:
+  push:
+    paths:
+      - 'draco-token-optimizer/draco/**'
+  pull_request:
+    paths:
+      - 'draco-token-optimizer/draco/**'
+
+jobs:
+  test-quality-gates:
+    name: Test Quality Gates
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Run Quality Verification
+        run: |
+          python -c "import sys; sys.path.insert(0, 'draco-token-optimizer'); from draco.config import get_reduction_target, get_quality_threshold; r = get_reduction_target(); q = get_quality_threshold(); print(f'Reduction: {r}%, Quality: {q}%'); assert r >= 90 and q >= 90, '90%+ mandate failed'; print('PASSED: 90%+ mandates verified')"

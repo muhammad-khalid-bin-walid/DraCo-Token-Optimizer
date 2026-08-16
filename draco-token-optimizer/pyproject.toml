@@ -1,0 +1,90 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.backends._legacy:_Backend"
+
+[project]
+name = "draco-token-optimizer"
+version = "2.0.0"
+description = "Comprehensive token optimization system for AI coding agents"
+requires-python = ">=3.9"
+license = {
+    "text": "MIT License"
+}
+
+# Core dependencies
+dependencies = [
+    "tiktoken>=0.5.0",
+    "onnxruntime>=1.16.3",
+    "rank-bm25>=1.1.0",
+    "pyyaml>=6.0",
+]
+
+# Optional ML dependencies
+extras = {
+    "ml": [
+        "transformers>=4.35.0",
+        "sentence-transformers>=2.2.0",
+        "datasets>=2.14.0",
+    ],
+    "gpu": [
+        "onnxruntime-gpu>=1.16.3",
+    ],
+    "dev": [
+        "pytest>=7.4.0",
+        "pytest-mock>=3.10.0",
+        "black>=22.0.0",
+        "ruff>=0.1.0",
+    ],
+}
+
+# Project metadata
+urls = {
+    "Homepage": "https://github.com/draco-token-optimizer/draco",
+    "Documentation": "https://draco-token-optimizer.readthedocs.io/",
+    "Source": "https://github.com/draco-token-optimizer/draco",
+    "Tracker": "https://github.com/draco-token-optimizer/draco/issues",
+}
+
+[project.scripts]
+draco = "draco.cli:main"
+
+[project.urls."Documentation"]
+include = "docs/**"
+
+[project.urls."Changelog"]
+include = "CHANGELOG.md"
+
+[project.urls."CI"]
+github = "https://github.com/draco-token-optimizer/draco/actions"
+
+[project.optional-dependencies]
+ml = ["transformers>=4.35.0", "sentence-transformers>=2.2.0"]
+gpu = ["onnxruntime-gpu>=1.16.3"]
+dev = ["pytest>=7.4.0", "ruff>=0.1.0"]
+
+# Build configuration
+[tool.setuptools.packages.find]
+include = ["draco", "draco.*"]
+
+[tool.setuptools.package-data]
+draco = [
+    "*.json",
+    "*.yaml",
+    "*.yml",
+    "*.md",
+]
+
+# Python version requirements
+[project.scripts.draco]
+source = "console_scripts"
+
+# Default class
+[project.scripts.draco]
+maintainer = "DraCo Team"
+maintainer_email = "team@draco-token-optimizer.io"
+
+# Keywords
+keywords = [
+    "token", "optimization", "AI", "coding", "compression", "NLP", "ML",
+    "PEGASUS", "BART", "ZON", "MCP"
+]

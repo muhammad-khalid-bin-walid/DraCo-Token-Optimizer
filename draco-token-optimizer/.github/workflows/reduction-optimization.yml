@@ -1,0 +1,75 @@
+name: DraCo Reduction & Optimization
+
+on:
+  push:
+    paths:
+      - 'draco-token-optimizer/draco/**'
+  pull_request:
+    paths:
+      - 'draco-token-optimizer/draco/**'
+
+jobs:
+  test-reductions:
+    name: Test Token Reductions
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    strategy:
+      matrix:
+        test_text: [
+          'This is a test sentence with some repetitive phrases that can be reduced for token optimization purposes.',
+          'Build your project using the configure settings and run the test suite to verify quality preservation.',
+          'Please note that it is important to consider the implications of the configuration settings for the overall system design.',
+          'Reduce tokens while preserving quality and maintaining the essential technical content throughout the document.',
+          'The quantization sparsity target for claude_code is 90 percent with quality retention above 90 percent.'
+        ]
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+
+      - name: Run Reduction Tests
+        run: |
+          python -c "
+          import sys, numpy as np
+          sys.path.insert(0, 'draco-token-optimizer')
+          
+          from draco.core.reducer import count_tokens, analyze_text, apply_basic_reduction
+          from draco.nlp.classification import classify_text, detect_intent
+          
+          results = []
+          for text in ['${{ matrix.test_text }}']:
+              count = count_tokens(text)
+              analysis = analyze_text(text)
+              reduction = apply_basic_reduction(text)
+              classification = classify_text(text)
+              intent = detect_intent(text)
+              
+              results.append({
+                  'text': text[:50] + '...',
+                  'token_count': count,
+                  'reducible': analysis.reducible_tokens,
+                  'essential': analysis.essential_tokens,
+                  'quality': analysis.quality_score,
+                  'verdict': reduction['verdict'],
+                  'reduction_pct': reduction['reduction_percentage'],
+                  'quality_pct': reduction['quality_percentage'],
+                  'intent': intent
+              })
+           
+          # Verify 90%+ quality threshold where applicable
+          for r in results:
+              if r['quality_pct'] < 90 and r['reduction_pct'] >= 90:
+                  print(f'WARNING: Reduction {r[\"reduction_pct\"]:.1f}% but quality only {r[\"quality_pct\"]:.1f}%')
+              else:
+                  print(f'OK: {r[\"text\"]} -> reduction={r[\"reduction_pct\"]:.1f}%, quality={r[\"quality_pct\"]:.1f}%, verdict={r[\"verdict\"]}')
+          print(f'Total tests: {len(results)}')
+          "

@@ -1,0 +1,182 @@
+# draco-deployment.skill - Phase 12: Continuous Learning & Self-Optimizing
+
+## Purpose
+Phase 12 skill for continuous learning, heuristic refinement, and self-optimizing system deployment. Enables auto-improvement through feedback loops, heuristic refinement, and profile auto-updating.
+
+## Core Features
+
+### Continuous Learning
+- **Learning Enabled**: True (default)
+- **Auto-Update Frequency**: 24h (default)
+- **Heuristic Refinement**: CMA-ES algorithm (50 heuristics per cycle)
+- **Expected Improvement**: 0.3 (default)
+- **A/B Testing**: Enabled (minimum 100 samples)
+- **Degradation Threshold**: 0.85 (85% quality retention)
+- **Self-Healing Strategies**: revert, adjust, retrain, update
+
+### Profile Auto-Update
+- **Scheduler**: 24h default frequency
+- **Versioning**: Semantic versioning (v1.0, v1.1, etc.)
+- **Rollback Support**: Enabled (auto-revert on degradation)
+- **Update Triggers**: quality drop >15%, user corrections, scheduled
+
+### Feedback Collection
+- **Source Types**: user corrections, performance metrics, agent feedback, quality gates
+- **Collection Rate**: per-operation default
+- **Storage**: JSON-based history with timestamps
+- **Retention**: 90 days default
+
+### A/B Testing Framework
+- **Minimum Samples**: 100
+- **Confidence Level**: 95% default
+- **Test Duration**: minimum 24h
+- **Success Criteria**: improvement > expected_improvement (0.3 default)
+
+### Degradation Detection
+- **Monitoring**: continuous quality score tracking
+- **Threshold**: quality drop >15% from baseline
+- **Actions**: trigger self-healing, alert administrators, log event
+- **Recovery**: automatic revert or adjust strategies
+
+### Self-Optimization Loop
+1. Collect feedback from recent operations
+2. Run CMA-ES heuristic refinement (50 heuristics)
+3. Evaluate A/B test results
+4. Update profiles and configuration
+5. Deploy improvements if quality threshold maintained
+6. Log results for trend analysis
+7. Repeat cycle
+
+## Deployment Configuration
+
+### System Settings
+- `continuous_learning`: True (enabled default)
+- `auto_update`: True (24h frequency)
+- `heuristic_refinement`: CMA-ES (50 heuristics per cycle)
+- `ab_testing`: True (minimum 100 samples)
+- `degradation_detection`: True (threshold: 0.85)
+- `self_healing`: True (4 strategies: revert, adjust, retrain, update)
+
+### Update Triggers
+- Quality score drops below 85% of baseline
+- User provides explicit correction
+- Scheduled update (every 24h)
+- New agent integration
+- Configuration change
+
+### Rollback Protocol
+1. Detect degradation via quality monitoring
+2. Auto-revert to previous configuration
+3. Log degradation event with timestamp
+4. Notify administrators (if enabled)
+5. Resume normal operation with previous settings
+
+## Integration Points
+
+### With Phase 11 (Testing & Validation)
+- Quality gate results feed into degradation detection
+- Test outcomes inform heuristic refinement
+- A/B test results validate optimization strategies
+
+### With Phase 10 (Agent Integration)
+- Agent-specific quality thresholds update via YAGNI ladder
+- Agent profile auto-updates based on performance
+- Reduction cap adjustments per agent type
+
+### With Phase 9 (Quantization/Pruning)
+- Pruning sparsity targets auto-tune based on quality metrics
+- Quantization bit allocation optimizes for current workload
+- Model-aware adjustments per LLM type
+
+### With Phase 8 (ZON Format)
+- Compression depth auto-adjusts based on quality preservation
+- Readability modes optimize for current agent profiles
+- Schema versioning stays current with best practices
+
+### With Phase 7 (Verdict-First)
+- Verdict accuracy improves with continuous learning
+- Compression ratio optimization feeds into verdict selection
+- Technical tag generation updates with new patterns
+
+### With Phase 6 (Noise Cancellation)
+- Verbose phrase patterns update based on user feedback
+- Importance scoring refinements from correction data
+- Classification model updates from new labeled data
+
+### With Phase 5 (YAML Filters)
+- Filter rules auto-optimize based on effectiveness data
+- Importance/frequency thresholds adjust to current content
+- Rule conflict resolution updates from violation logs
+
+### With Phase 4 (Hybrid RAG)
+- BM25 + ONNX weights adjust based on search quality
+- Relevance scoring improves with feedback loop
+- Multi-vector search parameters update
+
+### With Phase 3 (Tree-sitter)
+- Codebase skeleton updates reflect optimization changes
+- Import graph refinements from agent usage patterns
+- Build/test pattern updates from deployment data
+
+### With Phase 2 (MCP Protocol)
+- Zero-LLM routing confidence thresholds update
+- Deterministic command patterns refine from usage
+- Transport protocol preferences update
+
+### With Phase 1 (Baseline & Metrics)
+- Baseline measurements refresh with new data
+- Token profiling updates from continuous analysis
+- Metric set adjustments based on quality trends
+
+## Quality Gates (Phase 11 Integration)
+
+### 200+ Quality Gates Monitored
+- Reduction gate: ensures 90%+ token reduction target
+- Quality gate: ensures 90%+ quality preservation
+- Agent gate: validates per-agent reduction caps
+- ZON gate: verifies lossless compression integrity
+- Quantization gate: checks sparsity/quality balance
+- MCP gate: validates zero-LLM routing decisions
+- Agent gate: checks YAGNI level compliance
+- Format gate: ensures ZON schema compliance
+- Noise gate: validates noise reduction percentages
+- Verdict gate: checks verdict-first output accuracy
+
+### Depletion Detection Triggers
+- Quality score drop >15% from baseline
+- Reduction rate below 85% of target
+- Agent compatibility degradation
+- Self-healing failure events
+- A/B test inconclusiveness
+
+### Self-Healing Actions
+- **revert**: restore previous configuration
+- **adjust**: fine-tune parameters within safe bounds
+- **retrain**: update models with new data
+- **update**: deploy improved configuration
+
+## Version History
+
+| Version | Date | Changes |
+|---------|------|---------|
+| `v1.0 (plan)` | 2026-08-13 | Initial 12-phase plan with continuous learning |
+| `v1.0 (deploy)` | 2026-08-14 | Deployment skill creation, auto-update system |
+
+## Quick Start
+
+```bash
+# Enable continuous learning
+draco configure continuous_learning=True
+
+# Set auto-update frequency
+draco configure auto_update=True
+
+# Manual update trigger
+draco auto-update --reason "post-deployment optimization"
+
+# Check degradation
+draco check-degradation --threshold 0.85
+
+# Run A/B test
+draco ab-test --minimum-samples 100 --duration 24h
+```

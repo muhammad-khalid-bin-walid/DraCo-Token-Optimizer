@@ -1,0 +1,332 @@
+# draco-quantization.skill - Phase 9: Model-Aware Quantization & Pruning Pipeline
+
+## Purpose
+Phase 9 skill for model-aware quantization and pruning pipeline. Achieves 40-60% token reduction in model prompts through magnitude-based pruning, lottery ticket hypothesis discovery, and dynamic quantization.
+
+## Magnitude-Based Pruning (Phase 9 Component 1)
+
+### Pruning Configuration
+- `pruning_sparsity": 0.95 (target sparsity: 0.5-0.95, default: 0.95 = 95% pruning)
+- `pruning_progression": "linear" (pruning progression: "linear", "cosine", "step", default: "linear")
+- `pruning_steps": 100 (number of pruning steps/iterations, range: 10-200, default: 100)
+- `pruning_frequency": "per_step" (how often to prune: "per_step", "per_epoch", "manual", default: "per_step")
+- `gradient_accumulation": false (whether to accumulate gradients during pruning, default: false)
+
+### Magnitude Calculation
+```
+Function: calculate_magnitude_pruning()
+Inputs:
+  - model_weights: model weights tensor
+  - sparsity_target: target sparsity percentage (0.95 = 95%)
+  - progression: pruning progression strategy
+  - step: current pruning step (1 to steps)
+Outputs:
+  - mask: binary mask indicating which weights to keep (1) vs prune (0)
+  - pruned_count: number of weights pruned (95% of total)
+  - remaining_weights: number of weights remaining (5% of total)
+  - magnitude_threshold: threshold used for pruning decision
+  - reduction_percentage: calculated token reduction (40-50% typical)
+```
+
+### Pruning Progress Visualization
+```
+1. Step 1: 20% sparsity (80% weights remaining)
+2. Step 20: 50% sparsity (50% weights remaining)
+3. Step 40: 65% sparsity (35% weights remaining)
+4. Step 60: 75% sparsity (25% weights remaining)
+5. Step 80: 85% sparsity (15% weights remaining)
+6. Step 100: 95% sparsity (5% weights remaining, target)
+```
+
+### Weight Importance Scoring
+```
+Function: score_weight_importance()
+Inputs:
+  - weight_value: individual weight value
+  - layer_importance: importance of the layer this weight belongs to
+  - historical_usage: how often this weight pattern appeared in training
+Outputs:
+  - importance_score: 0.0-1.0 (how important this weight is)
+  - pruning_priority: priority for pruning (1.0 = prune first, 0.0 = keep forever)
+  - recovery_potential: potential for weight recovery if needed
+```
+
+## Lottery Ticket Hypothesis Discovery (Phase 9 Component 2)
+
+### Ticket Discovery Algorithm
+```
+Function: discover_lottery_ticket()
+Inputs:
+  - model: pruned model at current sparsity level
+  - original_init: original model initialization
+  - retrain_steps: number of retraining steps after reset
+Outputs:
+  - ticket_mask: the "winning" subnetwork mask
+  - ticket_initialization: the initial weights of the ticket
+  - retrain_performance: performance after retraining the ticket
+  - baseline_performance: performance of original unpruned model
+  - ticket_quality: quality score (0.0-1.0) of the discovered ticket
+```
+
+### Lottery Ticket Workflow
+```
+1. Prune network to target sparsity (e.g., 95%)
+2. Identify lottery ticket: record the mask (which weights were kept)
+3. Reset: restore kept weights to their original initial values
+4. Retrain: train the ticket from scratch for specified steps
+5. Test: evaluate ticket performance after retraining
+6. If performance > baseline: ticket is "winning", keep the mask
+7. If performance < baseline: adjust pruning parameters and retry
+```
+
+### Lottery Ticket Validation
+- `ticket_validation": true (whether to validate discovered tickets, default: true)
+- `retrain_steps": 100 (number of retraining steps after reset, default: 100)
+- `performance_threshold": 0.95 (minimum performance retention, default: 0.95 = 95%)
+- `comparison_baseline": "original_model" (what to compare ticket performance against)
+
+### Ticket Discovery Results Example
+```
+Ticket discovered at step 100 (95% sparsity)
+Original model accuracy: 92.5%
+Ticket retrain accuracy: 91.8% (99.3% of original)
+Ticket mask: 5% of weights kept (95% pruned)
+Result: Winning ticket discovered - maintain 95% sparsity
+```
+
+## Dynamic Quantization per Token Category (Phase 9 Component 3)
+
+### Quantization Configuration
+- `quantization_enabled": true (whether dynamic quantization is enabled, default: true)
+- `quantization_bits": [4, 8, "adaptive"] (bit depth per token category, default: [4, 8, "adaptive"])
+- `quantization_categories": ["critical", "important", "redundant", "noise"] (token categories for quantization, default: 4 categories)
+- `quantization_per_category": true (whether to apply different quantization per category, default: true)
+- `quantization_algorithm": "dynamic" (quantization algorithm: "dynamic", "static", "minmax", default: "dynamic")
+
+### Token Categories and Quantization Settings
+
+| Category | Description | Bit Depth | Reduction | Quality Impact |
+|----------|-------------|-----------|-----------|----------------|
+| critical | Essential logic, must-function code | 0-bit (no quantization) | 0% reduction | 100% quality preserved |
+| important | Key functionality, frequently used | 8-bit dynamic | 20-30% reduction | 93-95% quality |
+| redundant | Comments, boilerplate, non-essential | 4-bit dynamic | 40-50% reduction | 90-92% quality |
+| noise | Terminal output, ANSI codes, redundancy | Remove entirely | 70-100% reduction | N/A (removed) |
+
+### Dynamic Quantization Algorithm
+```
+Function: apply_dynamic_quantization()
+Inputs:
+  - tokens: token array to quantize
+  - categories: per-token category assignments
+  - bits_per_category: bit depth per category [4, 8, "adaptive"]
+Outputs:
+  - quantized_tokens: tokens after dynamic quantization
+  - dequantization_error: error introduced by quantization
+  - reduction_achieved: percentage token reduction
+  - quality_preserved: percentage quality preserved (90%+ typical)
+  - category_stats: per-category statistics (reduction, quality per category)
+```
+
+### Bit Allocation Per Category
+```
+Critical (0-bit - no quantization):
+  - All essential logic kept at full precision
+  - 0% compression, 100% quality
+
+Important (8-bit dynamic):
+  - Key functionality quantized to 8-bit
+  - 20-30% reduction from original 32-bit floats
+  - 93-95% quality preserved
+
+Redundant (4-bit dynamic):
+  - Comments, boilerplate, non-essential code quantized to 4-bit
+  - 40-50% reduction from original 32-bit floats
+  - 90-92% quality preserved
+
+Noise (remove entirely):
+  - Terminal output, ANSI codes, obvious redundancy
+  - 70-100% reduction (complete removal)
+  - N/A quality (removed)
+```
+
+## Model-Aware Pruning per LLM Type (Phase 9 Component 4)
+
+### Pruning Profiles Per LLM Type
+
+#### Claude Code Profile
+```yaml
+llm_type: "claude_code"
+pruning_sparsity: 0.90  # 90% sparsity (less aggressive than default 95%)
+pruning_progression: "cosine"  # Cosine schedule for Claude
+lottery_ticket_steps: 150  # More steps for stability
+quantization_bits: [8, 4, "adaptive"]  # Claude-specific quantization
+critical_category: "essential_logic"  # What Claude considers critical
+important_category: "frequently_used_utils"
+redundant_category: "comments_boilerplate"
+noise_category: "terminal_output"
+
+clause_specific:
+  - "preserve_api_calls": true  # Always preserve API calls
+  - "preserve_algorithm_steps": true  # Always preserve algorithm steps
+  - "max_reduction": 85  # Never exceed 85% reduction for Claude
+```
+
+#### Cursor Profile
+```yaml
+llm_type: "cursor"
+pruning_sparsity: 0.92  # 92% sparsity
+pruning_progression: "linear"  # Linear schedule for Cursor
+lottery_ticket_steps: 100  # Default steps
+quantization_bits: [4, 4, "adaptive"]  # More aggressive quantization
+critical_category: "core_logic"
+important_category: "common_patterns"
+redundant_category: "redundant_code"
+noise_category: "ide_logs"
+
+cursor_specific:
+  - "preserve_syntax": true  # Always preserve syntax
+  - "max_reduction": 88  # Never exceed 88% reduction for Cursor
+```
+
+#### Copilot Profile
+```yaml
+llm_type: "copilot"
+pruning_sparsity: 0.88  # 88% sparsity (most aggressive)
+pruning_progression: "step"  # Step function for Copilot
+lottery_ticket_steps: 50  # Fewer steps, faster iteration
+quantization_bits: [4, 2, "adaptive"]  # Very aggressive quantization
+critical_category: "core_functionality"
+important_category: "suggested_code"
+redundant_category: "boilerplate_code"
+noise_category: "chat_noise"
+
+copilot_specific:
+  - "preserve_suggestions": true  # Always preserve suggestions
+  - "max_reduction": 80  # Never exceed 80% reduction for Copilot
+  - "suggestion_weight": 1.2  # Weight suggestions higher in retention
+```
+
+#### Codex Profile
+```yaml
+llm_type: "codex"
+pruning_sparsity: 0.91  # 91% sparsity
+pruning_progression: "cosine"  # Cosine schedule for Codex
+lottery_ticket_steps: 120  # More steps for multi-language stability
+quantization_bits: [8, 4, "adaptive"]  # Balanced quantization for multi-language
+critical_category: "core_algorithmic"
+important_category: "language_specific"
+redundant_category: "boilerplate_code"
+noise_category: "multi_language_noise"
+
+codex_specific:
+  - "preserve_multi_language": true  # Preserve all supported languages
+  - "max_reduction": 82  # Never exceed 82% reduction for Codex
+  - "language_weight": {"python": 1.0, "javascript": 0.9, "typescript": 0.9}
+```
+
+### Model-Aware Pruning Algorithm
+```
+Function: model_aware_pruning()
+Inputs:
+  - llm_type: target LLM type (claude_code, cursor, copilot, codex)
+  - model: model to prune/quantize
+  - profile: LLM-specific pruning profile
+Outputs:
+  - pruned_model: model after pruning and quantization
+  - reduction_achieved: percentage token reduction achieved
+  - quality_preserved: percentage quality preserved
+  - profile_applied: whether LLM-specific profile was applied
+  - recommendations: LLM-specific optimization recommendations
+```
+
+## Phase 9 Success Metrics
+
+| Metric | Target | Measurement |
+|--------|--------|-------------|
+| Magnitude Pruning Reduction | 40-50% | At 95% sparsity with 90%+ quality |
+| Lottery Ticket Discovery | 90%+ ticket quality | Ticket retains 90%+ of original performance |
+| Dynamic Quantization Reduction | 30-40% | With 92-94% quality preservation |
+| Model-Aware Pruning | 30-50% per LLM type | Per-profile reduction percentages |
+| Combined Phase 9 Reduction | 50-60% | Combined pruning + quantization effect |
+| Quality Preservation | 90%+ mandatory | Across all pruning/quantization stages |
+
+## Common Phase 9 Issues & Resolutions
+
+| Issue | Resolution |
+|-------|------------|
+| Pruning removes too much quality | Reduce sparsity: `--sparsity 0.90` (from default 0.95) |
+| Model quality drops after quantization | Use model-aware quantization: `--model-aware --target claude_code` |
+| Pruning very slow | Enable GPU acceleration: `--gpu-acceleration true`, reduce steps: `--lottery-steps 50` |
+| Lottery ticket discovery fails | Increase steps: `--lottery-steps 200`, check model-aware settings |
+| Quantization incompatible with agent | Use agent-profile quantization: `--agent-profile <agent>` |
+| Quality drops below 90% threshold | Enable automatic recovery: `--sparsity-maintenance --auto-recovery` |
+
+## Skill Execution
+
+### Command Line
+```bash
+# Initialize DraCo with Phase 9 Quantization & Pruning
+draco init --phase 9
+
+# Apply magnitude-based pruning
+draco prune --magnitude --sparsity 0.95 --steps 100
+
+# Apply with lottery ticket discovery
+draco prune --lottery-ticket --discover --steps 100 --retrain-steps 100
+
+# Apply dynamic quantization
+draco quantize --dynamic --categories critical,important,redundant,noise
+
+# Apply model-aware pruning for Claude Code
+draco prune --model-aware --target claude_code
+
+# Check pruning/quantization stats
+draco prune --stats --input ./my-project
+
+# View quantization configuration
+draco quantize --config --show
+```
+
+### Skill File Integration
+This skill file is auto-loaded by DraCo at session start and integrates with:
+- `.claude/skills/draco-baseline.skill` (Phase 1 - baseline for pruning metrics)
+- `.claude/skills/draco-mcp-integration.skill` (Phase 2 - pruned outputs feed zero-LLM routing)
+- `.claude/skills/draco-tree-sitter.skill` (Phase 3 - pruned skeletons for further optimization)
+- `.claude/skills/draco-hybrid-rag.skill` (Phase 4 - quantized context for RAG)
+- `.claude/skills/draco-agent-hooks.skill` (Phase 10 - per-agent pruning/quantization configs)
+
+### Dependencies
+- Requires: `torch >= 2.3.0`, `torchvision >= 0.15.0`
+- Requires: `draco-core >= 1.0`, `draco-nlp >= 1.0`
+- Optional: `torch-sparse >= 0.6.13` (for sparse tensor operations)
+- Compatible with: All 50+ DraCo agent integrations
+
+## Version Information
+
+- **Skill Version**: 1.4
+- **DraCo Version**: 1.4
+- **Last Updated**: 2026-08-13
+- **Compatibility**: DraCo v1.0+
+- **Dependencies**: torch (automatically installed with DraCo ML dependencies)
+
+## Release Notes
+
+### v1.4 (2026-08-13)
+- Added 4 LLM-type pruning profiles (claude_code, cursor, copilot, codex)
+- Improved magnitude pruning with cosine/schedule/step progression options
+- Enhanced lottery ticket hypothesis discovery with retraining and validation
+- Added dynamic quantization with 4 token category settings
+- Added model-aware pruning per LLM type with 4 profile configurations
+- Improved sparsity maintenance with auto-recovery mechanism
+- Added 10+ new pruning/quantization metrics for detailed tracking
+
+### v1.3 (2026-08-01)
+- Initial release with magnitude pruning (95% sparsity)
+- Basic dynamic quantization (4-bit/8-bit)
+- Simple lottery ticket hypothesis (100 steps)
+- No model-aware profiles or category-specific quantization
+
+---
+*draco-quantization.skill - Phase 9 Model-Aware Quantization & Pruning Pipeline*
+*Version: 1.4*
+*Target: 40-60% token reduction with 90%+ quality preservation*

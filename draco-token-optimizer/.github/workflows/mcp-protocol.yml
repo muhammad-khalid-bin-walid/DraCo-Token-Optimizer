@@ -1,0 +1,73 @@
+name: DraCo MCP Protocol
+
+on:
+  push:
+    paths:
+      - 'draco-token-optimizer/draco/mcp*.py'
+  pull_request:
+    paths:
+      - 'draco-token-optimizer/draco/mcp*.py'
+
+jobs:
+  test-mcp-protocol:
+    name: Test MCP Protocol
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+
+      - name: Test Zero-LLM Routing
+        run: |
+          python -c "
+          import sys
+          sys.path.insert(0, 'draco-token-optimizer')
+          from draco.mcp import is_zero_llm_enabled, create_mcp_message, ZeroLRM
+          
+          print(f'Zero-LLM enabled: {is_zero_llm_enabled()}')
+          
+          # Create test messages
+          msg1 = create_mcp_message('reduce_tokens', 'sender1', payload={'text': 'build your project'})
+          msg2 = create_mcp_message('classify_text', 'sender2', payload={'text': 'reduce tokens please'})
+          
+          print(f'Message 1 ID: {msg1.message_id}')
+          print(f'Message 2 ID: {msg2.message_id}')
+          
+          # Test zero-LLM decision
+          zero_llm = ZeroLRM()
+          decision = zero_llm.should_use_zero_llm('build your project')
+          print(f'Zero-LLM decision for build: use={decision[\"use_zero_llm\"]}, confidence={decision[\"confidence\"]}')
+          
+          decision2 = zero_llm.should_use_zero_llm('please note that it is important to consider')
+          print(f'Zero-LLM decision for verbose: use={decision2[\"use_zero_llm\"]}, confidence={decision2[\"confidence\"]}')
+          "
+
+      - name: Test Deterministic Commands
+        run: |
+          python -c "
+          import sys
+          sys.path.insert(0, 'draco-token-optimizer')
+          from draco.mcp import DeterministicCommandExecutor
+          
+          executor = DeterministicCommandExecutor()
+          
+          # Test build command
+          result = executor.execute('build my_project', {})
+          print(f'Build: success={result[\"success\"]}, output={result[\"output\"][:50]}')
+          
+          # Test run command
+          result = executor.execute('run tests', {})
+          print(f'Run: success={result[\"success\"]}, output={result[\"output\"][:50]}')
+          
+          # Test summary
+          print(f'Executor stats: {executor.success_count} success, {executor.failure_count} failures')
+          "

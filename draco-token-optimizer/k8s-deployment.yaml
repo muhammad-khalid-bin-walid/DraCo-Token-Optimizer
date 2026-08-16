@@ -1,0 +1,162 @@
+# DraCo Token Optimizer v2.0.0 - Kubernetes Deployment
+# Production-grade deployment with resource optimization
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: draco-optimizer
+  labels:
+    app: draco
+    version: "2.0.0"
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: draco
+  template:
+    metadata:
+      labels:
+        app: draco
+        version: "2.0.0"
+    spec:
+      containers:
+        - name: draco
+          image: draco-token-optimizer:2.0.0
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: REDUCTION_TARGET
+              value: "90"
+            - name: QUALITY_THRESHOLD
+              value: "90"
+            - name: DRACO_ENVIRONMENT
+              value: "production"
+            - name: MCP_TRANSPORT
+              value: "stdio"
+            - name: MCP_PORT
+              value: "5000"
+            - name: OPTIMIZE_CPU
+              value: "true"
+            - name: OPTIMIZE_MEMORY
+              value: "true"
+            - name: MAX_MEMORY_MB
+              value: "2048"
+            - name: MAX_CPU_PERCENT
+              value: "80"
+          resources:
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+          ports:
+            - containerPort: 5000
+              name: mcp-stdio
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 5000
+            initialDelaySeconds: 60
+            periodSeconds: 60
+            timeoutSeconds: 10
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 5000
+            initialDelaySeconds: 30
+            periodSeconds: 30
+            timeoutSeconds: 5
+            failureThreshold: 3
+          # Resource constraints for edge nodes
+          # Can be overridden via resource constraints at deployment time
+          # volumeMounts:
+          #   - name: data
+          #     mountPath: /app/data
+      # Enable service account for metrics collection
+      serviceAccountName: draco-optimizer
+      # Affinity for pod distribution
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: draco-node-type
+                    operator: In
+                    values:
+                      - "compute"
+      # Termination grace period
+      terminationGracePeriodSeconds: 30
+---
+# Kubernetes Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: draco-service
+  labels:
+    app: draco
+spec:
+  type: ClusterIP
+  selector:
+    app: draco
+  ports:
+    - name: mcp
+      protocol: TCP
+      port: 5000
+      target: 5000
+---
+# Kubernetes Horizontal Pod Autoscaler
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: draco-hpa
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: draco-optimizer
+  minReplicas: 2
+  maxReplicas: 10
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 70
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: 75
+---
+# Kubernetes ConfigMap for configuration
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: draco-config
+  labels:
+    app: draco
+data:
+  REDUCTION_TARGET: "90"
+  QUALITY_THRESHOLD: "90"
+  MCP_TRANSPORT: "stdio"
+  MCP_PORT: "5000"
+  DEPLOYMENT_ENVIRONMENT: "production"
+  OPTIMIZE_CPU: "true"
+  OPTIMIZE_MEMORY: "true"
+  MAX_MEMORY_MB: "2048"
+  MAX_CPU_PERCENT: "80"
+---
+# Kubernetes Secret for sensitive data (if needed)
+apiVersion: v1
+kind: Secret
+metadata:
+  name: draco-secrets
+  labels:
+    app: draco
+type: Opaque
+stringData:
+  # Add any sensitive configuration here
+  # API_KEY: "your-api-key-here"

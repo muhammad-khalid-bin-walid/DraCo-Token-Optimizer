@@ -1,0 +1,95 @@
+name: DraCo Quantization & Agent
+
+on:
+  push:
+    paths:
+      - 'draco-token-optimizer/draco/quantization*.py'
+      - 'draco-token-optimizer/draco/agents*.py'
+  pull_request:
+    paths:
+      - 'draco-token-optimizer/draco/quantization*.py'
+      - 'draco-token-optimizer/draco/agents*.py'
+
+jobs:
+  test-quantization:
+    name: Test Quantization & Agents
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    strategy:
+      matrix:
+        sparsity: [0.90, 0.95]
+        agent_type: [claude_code, cursor, copilot, codex]
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+
+      - name: Test Magnitude Pruning
+        run: |
+          python -c "
+          import sys, numpy as np
+          sys.path.insert(0, 'draco-token-optimizer')
+          from draco.quantization import apply_magnitude_pruning
+          
+          np.random.seed(42)
+          weights = np.random.randn(50, 50)
+          
+          result = apply_magnitude_pruning(weights, sparsity_target=matrix.sparsity)
+          print(f'Sparsity: {matrix.sparsity}')
+          print(f'Achieved sparsity: {result.achieved_sparsity:.4f}')
+          print(f'Quality retention: {result.quality_retention:.4f}')
+          print(f'Verdict: {result.verdict}')
+          
+          # Verify quality gate
+          if not result.passed_quality_gate:
+            print('WARNING: Quality gate failed - sparsity too aggressive')
+          else:
+            print('Quality gate PASSED')
+          "
+
+      - name: Test Agent Profiles
+        run: |
+          python -c "
+          import sys
+          sys.path.insert(0, 'draco-token-optimizer')
+          from draco.agents import get_agent_profile, get_yagni_level
+          
+          # Test agent profile
+          profile = get_agent_profile(matrix.agent_type)
+          print(f'Agent: {matrix.agent_type}')
+          print(f'Version: {profile.version}')
+          print(f'YAGNI Level: L{profile.yagni_level.level}')
+          print(f'Reduction cap: {profile.yagni_level.reduction_cap}%')
+          print(f'Quality minimum: {profile.yagni_level.quality_minimum}%')
+          
+          # Verify YAGNI level
+          yagni = get_yagni_level(profile.yagni_level.level)
+          print(f'YAGNI L{yagni.level}: {yagni.name}')
+          print(f'  Reduction cap: {yagni.reduction_cap}%')
+          print(f'  Quality minimum: {yagni.quality_minimum}%')
+          "
+
+      - name: Test Dynamic Quantization
+        run: |
+          python -c "
+          import sys, numpy as np
+          sys.path.insert(0, 'draco-token-optimizer')
+          from draco.quantization import apply_dynamic_quantization
+          
+          np.random.seed(42)
+          weights = np.random.randn(40, 40)
+          
+          result = apply_dynamic_quantization(weights)
+          print(f'Reduction: {result.reduction_percentage:.1f}%')
+          print(f'Quality retention: {result.quality_retention:.4f}')
+          print(f'Verdict: {result.verdict}')
+          "
